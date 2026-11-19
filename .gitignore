@@ -1,0 +1,19 @@
+# OS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Office lock files (the deck in docs/ gets opened)
+~$*
+
+# Logs
+*.log
+npm-debug.log*

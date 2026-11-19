@@ -1,0 +1,9 @@
+node_modules/
+dist/
+build/
+.env
+
+# Serverless / CDK / SAM build output, whichever we land on
+.serverless/
+cdk.out/
+.aws-sam/
