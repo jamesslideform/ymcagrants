@@ -16,6 +16,8 @@
   --sage-tint: #e0eae2;
   --gold: #b08440;
   --gold-tint: #f0e7d7;
+  --clay: #a4603f;
+  --clay-tint: #f1e0d8;
   --paper: #f5f7f7;
   --surface: #ffffff;
   --text: #35474f;
@@ -38,6 +40,10 @@
 body {
   margin: 0;
   background-color: var(--paper);
+}
+
+a {
+  color: var(--blue);
 }
 
 /* ---------------------------------------------------------------- shell -- */
@@ -80,6 +86,7 @@ body {
   color: var(--blue-tint);
   font: inherit;
   font-size: 0.9375rem;
+  text-decoration: none;
   cursor: pointer;
 }
 
@@ -94,7 +101,7 @@ body {
 }
 
 .app__main {
-  max-width: 1000px;
+  max-width: 1120px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -103,6 +110,49 @@ body {
   display: flex;
   flex-direction: column;
   gap: var(--gap-lg);
+}
+
+.stack--narrow {
+  max-width: 820px;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: var(--gap-lg);
+}
+
+/* ----------------------------------------------------------- page head --- */
+
+.page-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
+.page-head__title {
+  margin: 0;
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.page-head__subtitle {
+  margin: 0.25rem 0 0;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.page-head__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.breadcrumb {
+  font-size: 0.8125rem;
+  color: var(--muted);
 }
 
 /* --------------------------------------------------------------- panel --- */
@@ -114,6 +164,13 @@ body {
   background-color: var(--surface);
 }
 
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--gap);
+}
+
 .panel__title {
   margin: 0 0 1rem;
   font-size: 1rem;
@@ -121,7 +178,283 @@ body {
   color: var(--ink);
 }
 
+.panel__head .panel__title {
+  margin-bottom: 1rem;
+}
+
+.panel__link {
+  font-size: 0.8125rem;
+}
+
+/* --------------------------------------------------------------- tiles --- */
+
+.tile-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--gap);
+}
+
+.tile {
+  padding: 1.25rem;
+  border-radius: var(--radius);
+  background-color: var(--blue-tint);
+}
+
+.tile__value {
+  margin: 0 0 0.25rem;
+  font-size: 1.625rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.tile__label {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--text);
+}
+
+/* ------------------------------------------------------------ bar list --- */
+
+.bar-list,
+.deadline-list,
+.record-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.bar-list__item + .bar-list__item {
+  margin-top: 0.875rem;
+}
+
+.bar-list__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--gap);
+  margin-bottom: 0.375rem;
+  font-size: 0.875rem;
+}
+
+.bar-list__label {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.bar-list__label:hover {
+  text-decoration: underline;
+}
+
+.bar-list__value {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.bar {
+  height: 8px;
+  border-radius: 4px;
+  background-color: var(--paper);
+  overflow: hidden;
+}
+
+.bar__fill {
+  height: 100%;
+  background-color: var(--blue-mid);
+}
+
+.bar__fill--active { background-color: var(--sage); }
+.bar__fill--submitted { background-color: var(--blue); }
+.bar__fill--prospect { background-color: var(--blue-mid); }
+.bar__fill--closed { background-color: var(--muted); }
+.bar__fill--declined { background-color: var(--clay); }
+
+/* ------------------------------------------------------- deadline list --- */
+
+.deadline-list__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.deadline-list__item:last-child {
+  border-bottom: none;
+}
+
+.deadline-list__date {
+  min-width: 6.5rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--gold);
+}
+
+.deadline-list__date--overdue {
+  color: var(--clay);
+}
+
+.deadline-list__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9375rem;
+}
+
+/* --------------------------------------------------------- record list --- */
+
+.record-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.record-list__item--block {
+  display: block;
+}
+
+.record-list__item:last-child {
+  border-bottom: none;
+}
+
+.record-list__row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.record-list__title {
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.record-list__meta {
+  flex: 1;
+  font-size: 0.8125rem;
+  color: var(--muted);
+}
+
+.record-list__body {
+  margin: 0.375rem 0 0;
+  font-size: 0.9375rem;
+}
+
+.record-list__body--result {
+  color: var(--ink);
+}
+
+.record-list__link {
+  margin-left: auto;
+  font-size: 0.8125rem;
+}
+
+/* --------------------------------------------------------- detail grid --- */
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--gap);
+  margin: 0;
+}
+
+.detail-grid__item {
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-grid__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.detail-grid__value {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------ badges & pills --- */
+
+.badge {
+  display: inline-block;
+  padding: 0.1875rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.badge--active { background-color: var(--sage-tint); color: #30563f; }
+.badge--submitted { background-color: var(--blue-tint); color: var(--ink); }
+.badge--prospect { background-color: var(--paper); color: var(--blue); border: 1px solid var(--line); }
+.badge--closed { background-color: #e8ecee; color: #4c5a60; }
+.badge--declined { background-color: var(--clay-tint); color: #7c4228; }
+
+.pill {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: var(--text);
+  background-color: var(--paper);
+}
+
+.pill--warn {
+  border-color: var(--gold);
+  background-color: var(--gold-tint);
+  color: #6d4f1c;
+}
+
+.pill--quiet {
+  color: var(--muted);
+}
+
 /* ---------------------------------------------------------------- form -- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap);
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  gap: 0.375rem;
+  flex-wrap: wrap;
+}
+
+.chip {
+  padding: 0.375rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background-color: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.chip:hover {
+  border-color: var(--blue-mid);
+}
+
+.chip--selected {
+  border-color: var(--blue);
+  background-color: var(--blue);
+  color: var(--surface);
+}
 
 .field-grid {
   display: grid;
@@ -163,6 +496,10 @@ body {
   font-size: 0.9375rem;
 }
 
+.field__input--search {
+  min-width: 240px;
+}
+
 .field__input:focus {
   border-color: var(--blue);
   outline: 2px solid var(--blue-tint);
@@ -178,20 +515,29 @@ body {
 .form-actions {
   display: flex;
   align-items: center;
-  gap: var(--gap);
+  gap: 0.625rem;
   margin-top: var(--gap-lg);
 }
 
 .button {
-  padding: 0.5rem 1.25rem;
-  border: 1px solid transparent;
+  display: inline-block;
+  padding: 0.5rem 1.125rem;
+  border: 1px solid var(--line);
   border-radius: var(--radius);
+  background-color: var(--surface);
+  color: var(--text);
   font: inherit;
   font-size: 0.9375rem;
+  text-decoration: none;
   cursor: pointer;
 }
 
+.button:hover:not(:disabled) {
+  border-color: var(--blue-mid);
+}
+
 .button--primary {
+  border-color: transparent;
   background-color: var(--blue);
   color: var(--surface);
 }
@@ -203,19 +549,6 @@ body {
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.notice {
-  margin-top: var(--gap);
-  padding: 0.625rem 0.875rem;
-  border-radius: var(--radius);
-  font-size: 0.9375rem;
-}
-
-.notice--success {
-  background-color: var(--sage-tint);
-  color: var(--ink);
-  border-left: 3px solid var(--sage);
 }
 
 /* --------------------------------------------------------------- table --- */
@@ -254,19 +587,29 @@ body {
   display: block;
   font-weight: 600;
   color: var(--ink);
+  text-decoration: none;
+}
+
+a.table__primary:hover {
+  text-decoration: underline;
 }
 
 /* ------------------------------------------------------------- states --- */
 
 .muted {
   display: block;
-  margin: 0.5rem 0 0;
   font-size: 0.8125rem;
   color: var(--muted);
 }
 
-.form-actions .muted {
-  margin: 0;
+.muted--inline {
+  display: inline;
+  margin-left: 0.5rem;
+  font-weight: 400;
+}
+
+.muted--cell {
+  display: table-cell;
 }
 
 .state-message {

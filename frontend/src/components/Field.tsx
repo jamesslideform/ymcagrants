@@ -11,7 +11,7 @@ interface FieldProps {
   hint?: ReactNode;
 }
 
-/** Label + input, so every form on the site lines up the same way. */
+/** Label + input, so every form in the app lines up the same way. */
 export function Field({
   label,
   name,
@@ -42,6 +42,58 @@ export function Field({
         placeholder={placeholder}
         onChange={handleChange}
       />
+      {hint ? <p className="field__hint">{hint}</p> : null}
+    </div>
+  );
+}
+
+export interface SelectOption {
+  value: string;
+  label: string;
+}
+
+interface SelectFieldProps {
+  label: string;
+  name: string;
+  value: string;
+  options: readonly SelectOption[];
+  onChange: (name: string, value: string) => void;
+  required?: boolean;
+  placeholder?: string;
+  hint?: ReactNode;
+}
+
+export function SelectField({
+  label,
+  name,
+  value,
+  options,
+  onChange,
+  required = false,
+  placeholder,
+  hint,
+}: SelectFieldProps) {
+  return (
+    <div className="field">
+      <label className="field__label" htmlFor={name}>
+        {label}
+        {required ? <span className="field__required"> *</span> : null}
+      </label>
+      <select
+        id={name}
+        name={name}
+        className="field__input"
+        value={value}
+        required={required}
+        onChange={(event) => onChange(name, event.target.value)}
+      >
+        {placeholder ? <option value="">{placeholder}</option> : null}
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
       {hint ? <p className="field__hint">{hint}</p> : null}
     </div>
   );

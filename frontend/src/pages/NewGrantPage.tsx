@@ -1,17 +1,17 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import { ApiError, api } from "../api/client";
-import { Field } from "../components/Field";
-import { ApiErrorMessage, StateMessage } from "../components/StateMessage";
-import { formatDate, formatMoney } from "../format";
-import { useApiResource } from "../hooks/useApiResource";
-import type { Grant, GrantInput, ListResponse } from "../types";
+import { Field, SelectField } from "../components/Field";
+import { ApiErrorMessage } from "../components/StateMessage";
+import type { Grant, GrantInput, GrantStatus } from "../types";
+import { GRANT_STATUSES, GRANT_STATUS_LABELS } from "../types";
 
-/** The form's own state: every input is a string until it's submitted. */
 interface GrantFormState {
   name: string;
   funder: string;
+  status: string;
   submissionDate: string;
   startDate: string;
   lengthMonths: string;
@@ -23,6 +23,7 @@ interface GrantFormState {
 const EMPTY_FORM: GrantFormState = {
   name: "",
   funder: "",
+  status: "prospect",
   submissionDate: "",
   startDate: "",
   lengthMonths: "",
@@ -31,7 +32,12 @@ const EMPTY_FORM: GrantFormState = {
   amountReceived: "",
 };
 
-/** "" means the grants manager left it blank, which is a legal partial record. */
+const STATUS_OPTIONS = GRANT_STATUSES.map((status) => ({
+  value: status,
+  label: GRANT_STATUS_LABELS[status],
+}));
+
+/** A blank input means "not known yet", which is a legal partial record. */
 function optionalText(value: string): string | null {
   const trimmed: string = value.trim();
   return trimmed === "" ? null : trimmed;
@@ -50,6 +56,7 @@ function toGrantInput(form: GrantFormState): GrantInput {
   return {
     name: form.name.trim(),
     funder: form.funder.trim(),
+    status: form.status as GrantStatus,
     submissionDate: optionalText(form.submissionDate),
     startDate: optionalText(form.startDate),
     lengthMonths: optionalNumber(form.lengthMonths),
@@ -59,15 +66,12 @@ function toGrantInput(form: GrantFormState): GrantInput {
   };
 }
 
-/** The grant form page from the whiteboard: fill it in, submit, see it land. */
-export function GrantFormView() {
+/** Add a grant, then land on its detail page. */
+export function NewGrantPage() {
+  const navigate = useNavigate();
   const [form, setForm] = useState<GrantFormState>(EMPTY_FORM);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveError, setSaveError] = useState<ApiError | null>(null);
-  const [savedName, setSavedName] = useState<string | null>(null);
-  const [reloadToken, setReloadToken] = useState<number>(0);
-
-  const grants = useApiResource<ListResponse<Grant>>(() => api.listGrants(), [reloadToken]);
 
   function handleChange(name: string, value: string): void {
     setForm((previous) => ({ ...previous, [name]: value }));
@@ -77,32 +81,43 @@ export function GrantFormView() {
     event.preventDefault();
     setIsSaving(true);
     setSaveError(null);
-    setSavedName(null);
 
     try {
       const created: Grant = await api.createGrant(toGrantInput(form));
-      setSavedName(created.name);
-      setForm(EMPTY_FORM);
-      setReloadToken((token) => token + 1);
+      navigate(`/grants/${created.grantId}`);
     } catch (caught) {
       setSaveError(
         caught instanceof ApiError
           ? caught
           : new ApiError(0, "unknown_error", String(caught)),
       );
-    } finally {
       setIsSaving(false);
     }
   }
 
   return (
-    <div className="stack">
+    <div className="stack stack--narrow">
+      <nav className="breadcrumb" aria-label="Breadcrumb">
+        <Link to="/grants">Grants</Link>
+        <span aria-hidden="true"> / </span>
+        <span>New grant</span>
+      </nav>
+
+      <div className="page-head">
+        <div>
+          <h1 className="page-head__title">New grant</h1>
+          <p className="page-head__subtitle">
+            Only the name, funder, and status are required — fill in the rest as it
+            arrives.
+          </p>
+        </div>
+      </div>
+
       <section className="panel">
-        <h2 className="panel__title">New grant</h2>
         <form onSubmit={handleSubmit}>
           <div className="field-grid">
             <Field
-              label="Name"
+              label="Grant name"
               name="name"
               value={form.name}
               onChange={handleChange}
@@ -116,6 +131,14 @@ export function GrantFormView() {
               onChange={handleChange}
               required
               placeholder="United Way of Greater Knoxville"
+            />
+            <SelectField
+              label="Status"
+              name="status"
+              value={form.status}
+              options={STATUS_OPTIONS}
+              onChange={handleChange}
+              required
             />
             <Field
               label="Submission date"
@@ -141,12 +164,12 @@ export function GrantFormView() {
               hint="Months"
             />
             <Field
-              label="Due date"
+              label="Report due"
               name="dueDate"
               type="date"
               value={form.dueDate}
               onChange={handleChange}
-              hint="When the funder's report is due"
+              hint="Drives the deadline list on the overview"
             />
             <Field
               label="Amount requested"
@@ -167,57 +190,15 @@ export function GrantFormView() {
 
           <div className="form-actions">
             <button type="submit" className="button button--primary" disabled={isSaving}>
-              {isSaving ? "Submitting…" : "Submit"}
+              {isSaving ? "Saving…" : "Save grant"}
             </button>
-            <span className="muted">Only name and funder are required.</span>
+            <Link className="button" to="/grants">
+              Cancel
+            </Link>
           </div>
         </form>
 
-        {savedName ? (
-          <div className="notice notice--success">Saved “{savedName}”.</div>
-        ) : null}
         {saveError ? <ApiErrorMessage error={saveError} /> : null}
-      </section>
-
-      <section className="panel">
-        <h2 className="panel__title">Grants</h2>
-
-        {grants.isLoading ? <StateMessage title="Loading grants…" /> : null}
-        {grants.error ? <ApiErrorMessage error={grants.error} /> : null}
-
-        {grants.data && grants.data.items.length === 0 ? (
-          <p className="muted">No grants yet. The first one submitted shows up here.</p>
-        ) : null}
-
-        {grants.data && grants.data.items.length > 0 ? (
-          <table className="table">
-            <thead>
-              <tr>
-                <th scope="col">Grant</th>
-                <th scope="col">Funder</th>
-                <th scope="col">Requested</th>
-                <th scope="col">Received</th>
-                <th scope="col">Due</th>
-              </tr>
-            </thead>
-            <tbody>
-              {grants.data.items.map((grant) => (
-                <tr key={grant.grantId}>
-                  <td>
-                    <span className="table__primary">{grant.name}</span>
-                    {grant.lengthMonths === null ? null : (
-                      <span className="muted">{grant.lengthMonths} months</span>
-                    )}
-                  </td>
-                  <td>{grant.funder}</td>
-                  <td>{formatMoney(grant.amountRequested)}</td>
-                  <td>{formatMoney(grant.amountReceived)}</td>
-                  <td className="muted">{formatDate(grant.dueDate)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        ) : null}
       </section>
     </div>
   );

@@ -1,24 +1,26 @@
-import { useState } from "react";
+import { NavLink, Route, Routes } from "react-router-dom";
 
-import { GrantFormView } from "./views/GrantFormView";
-import { OutcomesView } from "./views/OutcomesView";
+import { GrantDetailPage } from "./pages/GrantDetailPage";
+import { GrantsPage } from "./pages/GrantsPage";
+import { NewGrantPage } from "./pages/NewGrantPage";
+import { NewOutcomePage } from "./pages/NewOutcomePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { OutcomesPage } from "./pages/OutcomesPage";
+import { OverviewPage } from "./pages/OverviewPage";
 
-type ViewName = "grant-form" | "outcomes";
-
-const NAV_ITEMS: ReadonlyArray<{ name: ViewName; label: string }> = [
-  { name: "grant-form", label: "Grant form" },
-  { name: "outcomes", label: "Outcomes by zip" },
+const NAV_ITEMS: ReadonlyArray<{ to: string; label: string }> = [
+  { to: "/", label: "Overview" },
+  { to: "/grants", label: "Grants" },
+  { to: "/outcomes", label: "Outcomes" },
 ];
 
 /**
- * App shell — the two pages from the kickoff whiteboard.
+ * App shell and routing.
  *
- * Views switch on local state rather than a router: there are two screens, and
- * the team should pick a router when deep-linking to a grant matters.
+ * No login: the prototype runs as the grants manager. When auth lands, this is
+ * where the route guard goes — see FRONTEND_TODO.md.
  */
 export function App() {
-  const [view, setView] = useState<ViewName>("grant-form");
-
   return (
     <div className="app">
       <header className="app__header">
@@ -28,21 +30,31 @@ export function App() {
         </div>
         <nav className="app__nav" aria-label="Main">
           {NAV_ITEMS.map((item) => (
-            <button
-              key={item.name}
-              type="button"
-              className={item.name === view ? "nav-link nav-link--active" : "nav-link"}
-              aria-current={item.name === view ? "page" : undefined}
-              onClick={() => setView(item.name)}
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                isActive ? "nav-link nav-link--active" : "nav-link"
+              }
             >
               {item.label}
-            </button>
+            </NavLink>
           ))}
         </nav>
       </header>
 
       <main className="app__main">
-        {view === "grant-form" ? <GrantFormView /> : <OutcomesView />}
+        <Routes>
+          <Route path="/" element={<OverviewPage />} />
+          <Route path="/grants" element={<GrantsPage />} />
+          <Route path="/grants/new" element={<NewGrantPage />} />
+          <Route path="/grants/:grantId" element={<GrantDetailPage />} />
+          <Route path="/grants/:grantId/outcomes/new" element={<NewOutcomePage />} />
+          <Route path="/outcomes" element={<OutcomesPage />} />
+          <Route path="/outcomes/new" element={<NewOutcomePage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
       </main>
     </div>
   );

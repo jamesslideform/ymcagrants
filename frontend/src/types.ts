@@ -1,5 +1,5 @@
 /**
- * Domain types for the proof of concept, mirroring docs/api-contract.md.
+ * Domain types, mirroring docs/api-contract.md.
  *
  * When the contract changes, change it here in the same pull request.
  */
@@ -10,11 +10,36 @@ export type DecimalString = string;
 /** Calendar date, "YYYY-MM-DD". */
 export type IsoDate = string;
 
+/** Where a grant sits in its lifecycle. Drives the overview breakdown. */
+export type GrantStatus =
+  | "prospect"
+  | "submitted"
+  | "active"
+  | "closed"
+  | "declined";
+
+export const GRANT_STATUSES: readonly GrantStatus[] = [
+  "prospect",
+  "submitted",
+  "active",
+  "closed",
+  "declined",
+];
+
+export const GRANT_STATUS_LABELS: Readonly<Record<GrantStatus, string>> = {
+  prospect: "Prospect",
+  submitted: "Submitted",
+  active: "Active",
+  closed: "Closed",
+  declined: "Declined",
+};
+
 /** A grant as the form submits it and the API returns it. */
 export interface Grant {
   grantId: string;
   name: string;
   funder: string;
+  status: GrantStatus;
   submissionDate: IsoDate | null;
   startDate: IsoDate | null;
   lengthMonths: number | null;
@@ -24,10 +49,11 @@ export interface Grant {
   createdAt: string;
 }
 
-/** What POST /api/grants accepts. Only name and funder are required. */
+/** What POST /api/grants accepts. Only name, funder, and status are required. */
 export interface GrantInput {
   name: string;
   funder: string;
+  status: GrantStatus;
   submissionDate?: IsoDate | null;
   startDate?: IsoDate | null;
   lengthMonths?: number | null;
@@ -68,14 +94,46 @@ export interface GrantWithOutcomes extends Grant {
   outcomes: Outcome[];
 }
 
-/** One row of the outcomes-by-zip view. */
+/** One row of the outcomes-by-zip rollup. */
 export interface OutcomesByZip {
   zipCode: string;
-  /** Sum of peopleServed across this zip's outcomes. */
   peopleServed: number | null;
   outcomeCount: number;
   /** Distinct grants contributing to this zip. */
   grantCount: number;
+}
+
+/** How many grants sit in one status, and what they're worth. */
+export interface GrantStatusCount {
+  status: GrantStatus;
+  count: number;
+  amountRequested: DecimalString;
+  amountReceived: DecimalString;
+}
+
+/** A reporting deadline, flattened for the overview list. */
+export interface UpcomingDeadline {
+  grantId: string;
+  name: string;
+  funder: string;
+  dueDate: IsoDate;
+  /** Negative when the date has already passed. */
+  daysUntilDue: number;
+}
+
+/** Everything the overview page needs, in one request. */
+export interface OverviewSummary {
+  grantCount: number;
+  activeGrantCount: number;
+  totalRequested: DecimalString;
+  totalReceived: DecimalString;
+  statusCounts: GrantStatusCount[];
+  peopleServedTotal: number;
+  outcomeCount: number;
+  zipCount: number;
+  topZips: OutcomesByZip[];
+  upcomingDeadlines: UpcomingDeadline[];
+  recentGrants: Grant[];
 }
 
 /** Every list endpoint answers with this shape, so paging can be added later. */
