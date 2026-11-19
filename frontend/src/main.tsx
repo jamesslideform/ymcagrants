@@ -3,17 +3,19 @@ import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 
 import { App } from "./App";
+import { announceApiMode, apiMode } from "./api/mode";
 import "./styles.css";
 
 /**
- * The stub API is on unless VITE_API_MODE says otherwise. Set
- * VITE_API_MODE=live in .env.local to talk to Mike's backend instead — that
- * one flag is the whole migration on this side.
+ * The stub API is the default and the fallback; live is opt-in via
+ * VITE_API_MODE=live in frontend/.env.local. See ./api/mode for exactly what
+ * qualifies and why it falls back rather than forward.
  */
-if (import.meta.env.VITE_API_MODE !== "live") {
+if (apiMode === "stub") {
   const { installMockApi } = await import("./mocks/mockServer");
   installMockApi();
 }
+announceApiMode();
 
 const container: HTMLElement | null = document.getElementById("root");
 if (!container) {

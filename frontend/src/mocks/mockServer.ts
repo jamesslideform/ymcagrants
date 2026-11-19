@@ -282,10 +282,6 @@ export function installMockApi(): void {
     return route(method, url.pathname, url.searchParams, body);
   };
 
-  // eslint-disable-next-line no-console
-  console.info(
-    "%c[stub API]%c serving /api from src/mocks — see FRONTEND_TODO.md",
-    "color:#6b9b82;font-weight:bold",
-    "color:inherit",
-  );
+  // The startup banner lives in src/api/mode.ts so one place announces which
+  // API is in use, whichever one it is.
 }

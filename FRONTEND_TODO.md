@@ -19,11 +19,16 @@ understandable", useless for real data entry. Say so when you send the link.
 Redeploy after a change:
 
 ```bash
-cd frontend && npm run build
+cd frontend && npm run build:demo
 redeepctl publish ./dist --target managed \
   --id 53070C68-BEC9-4052-89FA-AAF38DAB6604 \
   --name "YMCA Grants & Outcomes" --kind page --entry index.html --visibility unlisted
 ```
+
+**`build:demo`, not `build`.** Vite bakes `VITE_API_MODE` in at build time, so a
+plain `npm run build` on a machine that has a live `.env.local` would ship a
+tester site pointed at someone's local backend — measured, not theoretical.
+`build:demo` forces the stub regardless of local env files.
 
 Pass `--id` or it publishes a second site. Versions are retained (up to 5);
 `redeepctl deployments rollback <id> <version>` goes back.
@@ -97,11 +102,36 @@ the migration can't surprise us with a code path that was never exercised. It al
 POSTs are stateful for the browser session, which is what makes the demo feel real.
 Reloading resets to the fixtures.
 
+### Which API is live, and the fallback
+
+`src/api/mode.ts` decides once at startup and announces it in the console. **The
+stub is the default and the fallback**: live needs an explicit
+`VITE_API_MODE=live`, which in practice means someone has their own
+`frontend/.env.local` with their backend config and AWS credentials. Measured
+behaviour, all six cases:
+
+| `.env.local` | Build | Result |
+| --- | --- | --- |
+| absent | `build` | **stub** |
+| `VITE_API_MODE=live` | `build` | live |
+| `VITE_API_MODE=live` | `build:demo` | **stub** |
+| `VITE_API_MODE=Live` (typo) | `build` | **stub**, and warns |
+| present, no mode line | `build` | **stub** |
+| `VITE_API_MODE=` (empty) | `build` | **stub** |
+
+It falls *back* rather than forward on purpose: the stub leaves a working app
+full of sample data, while a half-configured live mode leaves a dead one, and
+whoever is looking at it usually can't tell "misconfigured" from "broken".
+
 ### Migrating to Mike's backend
 
-1. Set `VITE_API_MODE=live` in `frontend/.env.local`.
-2. Confirm the dev proxy target in `vite.config.ts` matches where the API listens.
-3. Delete `src/mocks/` and the import block in `main.tsx`.
+1. Set `VITE_API_MODE=live` in `frontend/.env.local` (gitignored; holds your own
+   backend config — never commit it).
+2. Set `API_PROXY_TARGET` there too if the API isn't on `localhost:3000`; the
+   dev proxy keeps an API Gateway stage path, so `/api/grants` reaches
+   `/prod/api/grants`.
+3. When the stub is no longer wanted at all, delete `src/mocks/` and its import
+   in `main.tsx`.
 
 That's the whole migration on this side. No page, hook, or client change — provided the
 backend matches `docs/api-contract.md`. Do it one endpoint at a time if useful: the stub
