@@ -38,7 +38,7 @@ GET    /api/outcomes/by-zip    totals grouped by zip — the outcomes view
 Copy `.env.example` to `.env`:
 
 ```
-AWS_REGION=us-east-2
+AWS_REGION=us-east-1
 DYNAMODB_TABLE=ymcagrants
 PORT=3000
 ```
