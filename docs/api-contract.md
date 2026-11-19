@@ -17,6 +17,20 @@ it in a PR both of us review, and move the client and types in the same change.
   added without breaking callers.
 - Errors answer the HTTP status plus `{ "error": { "code": "...", "message": "..." } }`.
   `code` is stable and machine-readable; `message` is for people.
+
+  The codes in use, now pinned so the two sides can't drift apart:
+
+  | Status | `code` | When |
+  | --- | --- | --- |
+  | 400 | `invalid_json` | Body wasn't parseable JSON |
+  | 400 | `invalid_body` | Body was missing where one is required |
+  | 404 | `grant_not_found` | No grant with that id |
+  | 404 | `not_found` | No route matched |
+  | 422 | `validation_failed` | A field was missing or malformed |
+  | 500 | `internal_error` | Unhandled — the message is deliberately vague |
+
+  **The frontend branches on the HTTP status, not on `code`.** Adding a new code is
+  therefore safe; changing the status attached to an existing situation is not.
 - No auth in the PoC. Don't bake keys into the client; a session cookie goes in later.
 
 ## Endpoints

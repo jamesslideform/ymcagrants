@@ -16,6 +16,10 @@ It runs the **stub API**, so: the seven grants are fictional, anything a tester 
 gone on reload, and nothing is shared between testers. Good for "is this screen
 understandable", useless for real data entry. Say so when you send the link.
 
+**Send the whole URL including `?share=`.** The token sets a cookie on first visit; a bare
+deep link like `…/#/grants/g-1001` fails for anyone who hasn't been through it once. After
+that first visit, deep links work normally.
+
 Redeploy after a change:
 
 ```bash
@@ -68,9 +72,11 @@ npm run dev      # http://localhost:5173
   status bars, the overdue deadline flagged, outcomes by zip, footer lockup), and a cold
   load of `/#/grants/g-1001` resolves to the grant detail with both its outcomes. Console
   clean on both.
-- **Still unseen in a browser:** submitting either form, the grants-list filters and search,
-  mobile widths, and keyboard navigation. The stub-API checks cover the form logic, but
-  nobody has watched a browser do it.
+- **Also seen in a browser** since: the outcomes column sort, clicking a zip to filter and
+  clicking it again to clear, and the grants list filtered to `?status=declined`.
+- **Still unseen in a browser:** submitting either form, the grants-list search box, mobile
+  widths, and keyboard navigation. The stub-API checks cover the form logic, but nobody has
+  watched a browser do it.
 
 ---
 
@@ -157,9 +163,22 @@ Both are in `docs/api-contract.md` already; flagging them so they aren't a surpr
 
 ## TODO
 
+### Decisions waiting on James
+- [ ] **Do declined grants belong in the overview totals?** The breakdown no longer lists
+      Declined, but the header still says "7 grants tracked" and "funding requested"
+      still includes the declined grant's $12,000 — so the visible status rows sum to 6
+      while the tiles count 7. Either is defensible; right now it's neither, and someone
+      adding up the bars will notice. Changing what a money tile means is a product call,
+      which is why it wasn't folded into the hide-Declined change.
+- [ ] **Font.** The YMCA brand guide specifies Cachet Pro, falling back to Verdana. The app
+      uses Avenir Next. Cachet Pro is licensed and not bundled, and Verdana would
+      noticeably coarsen the UI — so this is a deliberate deviation that someone should
+      either bless or overrule before funder-facing output.
+
 ### Next up
 - [ ] Click the **forms** through in a real browser — add a grant, record an outcome, use the
-      list filters. The overview and grant detail have been checked; these have not.
+      search box. The overview, grant detail, outcomes sort/filter, and the grants status
+      filter have been checked; these have not.
 - [ ] Edit a grant (`/grants/:grantId/edit`) — right now a typo means re-creating it.
 - [ ] Empty state for a brand-new install: zero grants should read as a welcome, not a bug.
 - [ ] Form validation before submit — currently the stub rejects and we surface the error,
