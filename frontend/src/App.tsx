@@ -1,24 +1,23 @@
 import { useState } from "react";
 
-import { DashboardView } from "./views/DashboardView";
-import { GrantsView } from "./views/GrantsView";
+import { GrantFormView } from "./views/GrantFormView";
+import { OutcomesView } from "./views/OutcomesView";
 
-type ViewName = "dashboard" | "grants";
+type ViewName = "grant-form" | "outcomes";
 
 const NAV_ITEMS: ReadonlyArray<{ name: ViewName; label: string }> = [
-  { name: "dashboard", label: "Dashboard" },
-  { name: "grants", label: "Grants" },
+  { name: "grant-form", label: "Grant form" },
+  { name: "outcomes", label: "Outcomes by zip" },
 ];
 
 /**
- * App shell.
+ * App shell — the two pages from the kickoff whiteboard.
  *
- * Views are switched with local state rather than a router: there are two
- * screens today, and the team should pick a router when there's a reason to
- * (deep links to a grant are the likely trigger, in phase 1).
+ * Views switch on local state rather than a router: there are two screens, and
+ * the team should pick a router when deep-linking to a grant matters.
  */
 export function App() {
-  const [view, setView] = useState<ViewName>("dashboard");
+  const [view, setView] = useState<ViewName>("grant-form");
 
   return (
     <div className="app">
@@ -43,7 +42,7 @@ export function App() {
       </header>
 
       <main className="app__main">
-        {view === "dashboard" ? <DashboardView /> : <GrantsView />}
+        {view === "grant-form" ? <GrantFormView /> : <OutcomesView />}
       </main>
     </div>
   );
