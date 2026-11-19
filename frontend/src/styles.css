@@ -264,6 +264,11 @@ a {
   font-size: 0.8125rem;
 }
 
+.panel__hint {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
 /* --------------------------------------------------------------- tiles --- */
 
 .tile-row {
@@ -669,6 +674,98 @@ a {
 }
 
 a.table__primary:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------- sortable / filtering --- */
+
+.table--interactive th {
+  padding: 0;
+}
+
+/* The whole header cell is the sort control, so the click target matches what
+   the eye reads as the column. */
+.table__sort {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  letter-spacing: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.table__sort:hover {
+  background-color: var(--blue-tint);
+}
+
+.table__sort--active {
+  color: var(--brand);
+}
+
+.table__sort-arrow {
+  font-size: 0.6875rem;
+  opacity: 0.55;
+}
+
+.table__sort--active .table__sort-arrow {
+  opacity: 1;
+}
+
+.table__filter-link {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--brand);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.table__filter-link:hover {
+  color: var(--ink);
+}
+
+.table__row--selected {
+  background-color: var(--brand-tint);
+}
+
+.table__row--selected .table__filter-link {
+  color: var(--ink);
+}
+
+.pill--button {
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+}
+
+.pill--button:hover {
+  border-color: var(--brand);
+  color: var(--brand);
+}
+
+.pill--button[aria-pressed="true"] {
+  border-color: var(--brand);
+  background-color: var(--brand-tint);
+  color: var(--brand);
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--brand);
+  font: inherit;
+  cursor: pointer;
   text-decoration: underline;
 }
 
