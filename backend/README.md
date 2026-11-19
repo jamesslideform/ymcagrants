@@ -31,7 +31,10 @@ GET    /api/outcomes/by-zip    totals grouped by zip — the outcomes view
 - Money is a decimal **string** on the wire (`"48000.00"`), stored as a DynamoDB number.
 - Partial records save. Only `name` + `funder` on a grant, and `grantId` + `zipCode` on an
   outcome, are required. Everything else may arrive `null`.
-- CORS only matters if you skip the dev proxy. The proxy is simpler.
+- **CORS is needed before the deployed frontend can talk to AWS** — see
+  [#10](https://github.com/jamesslideform/ymcagrants/issues/10). Local dev doesn't show
+  it, because the Vite proxy makes everything same-origin; the deployed prototype on
+  `redeep.dev` is a different origin with no proxy in front of it.
 
 ## Running it
 

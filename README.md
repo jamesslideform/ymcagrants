@@ -58,10 +58,16 @@ between the frontend and the backend — change them in a PR both owners review.
 ## Repository layout
 
 ```
-frontend/   React + TypeScript + Vite. Grant form, outcomes by zip.  (James)
-backend/    Node + AWS + DynamoDB. Six endpoints.                    (Mike)
-docs/       Product deck, YMCA requirements packet, data model, API contract.
+frontend/           React + TypeScript + Vite. Overview, grants, outcomes.  (James)
+backend/            Node + AWS + DynamoDB. Seven endpoints.                 (Mike)
+docs/               Product deck, requirements packet, data model, API contract.
+assets/brand/       YMCA logos, palette, and the Y's brand guide.
+FRONTEND_TODO.md    Frontend status, architecture, decisions, open items.
+BACKEND_TODO.md     Backend status and open items.
 ```
+
+The two TODO files are the working notes — start there rather than reading the code, and
+keep them honest when something lands.
 
 The frontend and backend are separate deployables that meet at one HTTP contract. Nothing
 in `frontend/` imports from `backend/`.
