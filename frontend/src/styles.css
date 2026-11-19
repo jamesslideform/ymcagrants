@@ -1,13 +1,32 @@
 /*
- * Design tokens carried over from the product deck: deep teal-slate, muted
- * blue, sage, one warm accent. Calming on purpose — this is a screen someone
- * looks at all day.
+ * Two layers, on purpose.
  *
- * No UI framework yet. If the team wants one, replace these styles; the markup
- * is plain enough to survive it.
+ * BRAND comes from the official YMCA palette, loaded by index.html from
+ * /brand/ymca-palette.css and used for anything that carries the Y's
+ * identity: the logo, primary actions, links, status accents. #5c2e91 is the
+ * association's own purple (PMS 268C), sampled from ymcaetn.org.
+ *
+ * CHROME is the calm teal-slate surface system from the product deck —
+ * backgrounds, text, hairlines. Not brand colours, and deliberately quiet:
+ * this is a screen someone looks at all day.
+ *
+ * Every var() names an official fallback, so the page still renders if the
+ * palette file doesn't load.
  */
 
 :root {
+  /* Brand — official YMCA colours */
+  --brand: var(--ymca-purple-268, #5c2e91);
+  --brand-bright: var(--ymca-purple-2415, #92278f);
+  --brand-tint: #ece5f4;
+  --positive: var(--ymca-green-3268, #01a490);
+  --positive-tint: #ddf0ec;
+  --warn: var(--ymca-gold-137, #fcaf17);
+  --warn-tint: #fbefd6;
+  --overdue: var(--ymca-red-1807, #a92b31);
+  --overdue-tint: #f5e0e1;
+
+  /* Chrome — the deck's calm surface system */
   --ink: #13384a;
   --blue: #2e6d8e;
   --blue-mid: #5793b0;
@@ -43,10 +62,16 @@ body {
 }
 
 a {
-  color: var(--blue);
+  color: var(--brand);
 }
 
 /* ---------------------------------------------------------------- shell -- */
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
 
 .app__header {
   display: flex;
@@ -58,7 +83,22 @@ a {
   color: var(--surface);
 }
 
+/* The guide asks for clear space around the mark equal to the height of the
+   word "the" in it — roughly a sixth of the mark's height. The gap and the
+   header padding cover it at this size. */
+.app__logo {
+  height: 38px;
+  width: auto;
+  display: block;
+}
+
 .app__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+.app__brand-text {
   display: flex;
   flex-direction: column;
 }
@@ -101,9 +141,47 @@ a {
 }
 
 .app__main {
+  width: 100%;
   max-width: 1120px;
   margin: 0 auto;
   padding: 2rem;
+  flex: 1;
+}
+
+/* ------------------------------------------------------------- footer --- */
+
+.app__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--gap-lg);
+  flex-wrap: wrap;
+  max-width: 1120px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 1.75rem 2rem 2.5rem;
+  border-top: 1px solid var(--line);
+}
+
+/* The areas of impact must never appear without the logo — this lockup
+   includes it, which is why the lockup is used here rather than the text. */
+.app__footer-lockup {
+  height: 44px;
+  width: auto;
+  display: block;
+}
+
+.app__footer-text {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-align: right;
+}
+
+.app__tagline {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand);
 }
 
 .stack {
@@ -266,7 +344,7 @@ a {
   background-color: var(--blue-mid);
 }
 
-.bar__fill--active { background-color: var(--sage); }
+.bar__fill--active { background-color: var(--positive); }
 .bar__fill--submitted { background-color: var(--blue); }
 .bar__fill--prospect { background-color: var(--blue-mid); }
 .bar__fill--closed { background-color: var(--muted); }
@@ -290,11 +368,11 @@ a {
   min-width: 6.5rem;
   font-weight: 600;
   font-size: 0.875rem;
-  color: var(--gold);
+  color: var(--ink);
 }
 
 .deadline-list__date--overdue {
-  color: var(--clay);
+  color: var(--overdue);
 }
 
 .deadline-list__body {
@@ -393,7 +471,7 @@ a {
   font-weight: 600;
 }
 
-.badge--active { background-color: var(--sage-tint); color: #30563f; }
+.badge--active { background-color: var(--positive-tint); color: #0a5f55; }
 .badge--submitted { background-color: var(--blue-tint); color: var(--ink); }
 .badge--prospect { background-color: var(--paper); color: var(--blue); border: 1px solid var(--line); }
 .badge--closed { background-color: #e8ecee; color: #4c5a60; }
@@ -410,8 +488,8 @@ a {
 }
 
 .pill--warn {
-  border-color: var(--gold);
-  background-color: var(--gold-tint);
+  border-color: var(--warn);
+  background-color: var(--warn-tint);
   color: #6d4f1c;
 }
 
@@ -451,8 +529,8 @@ a {
 }
 
 .chip--selected {
-  border-color: var(--blue);
-  background-color: var(--blue);
+  border-color: var(--brand);
+  background-color: var(--brand);
   color: var(--surface);
 }
 
@@ -501,8 +579,8 @@ a {
 }
 
 .field__input:focus {
-  border-color: var(--blue);
-  outline: 2px solid var(--blue-tint);
+  border-color: var(--brand);
+  outline: 2px solid var(--brand-tint);
   outline-offset: 1px;
 }
 
@@ -538,12 +616,12 @@ a {
 
 .button--primary {
   border-color: transparent;
-  background-color: var(--blue);
+  background-color: var(--brand);
   color: var(--surface);
 }
 
 .button--primary:hover:not(:disabled) {
-  background-color: var(--ink);
+  background-color: color-mix(in srgb, var(--brand) 82%, black);
 }
 
 .button:disabled {

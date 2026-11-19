@@ -25,8 +25,17 @@ export function App() {
     <div className="app">
       <header className="app__header">
         <div className="app__brand">
-          <span className="app__title">Grants &amp; Outcomes</span>
-          <span className="app__subtitle">YMCA of East Tennessee</span>
+          <img
+            className="app__logo"
+            src="/brand/ymca-mark-white.svg"
+            alt="YMCA"
+            width={105}
+            height={80}
+          />
+          <span className="app__brand-text">
+            <span className="app__title">Grants &amp; Outcomes</span>
+            <span className="app__subtitle">YMCA of East Tennessee</span>
+          </span>
         </div>
         <nav className="app__nav" aria-label="Main">
           {NAV_ITEMS.map((item) => (
@@ -56,6 +65,20 @@ export function App() {
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
+
+      <footer className="app__footer">
+        <img
+          className="app__footer-lockup"
+          src="/brand/ymca-lockup-impact-purple.png"
+          alt="YMCA — for youth development, for healthy living, for social responsibility"
+          width={1218}
+          height={394}
+        />
+        <p className="app__footer-text">
+          <span className="app__tagline">For a better us.®</span>
+          Grants &amp; Outcomes prototype · YMCA of East Tennessee
+        </p>
+      </footer>
     </div>
   );
 }

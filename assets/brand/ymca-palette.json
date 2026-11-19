@@ -1,0 +1,36 @@
+{
+  "source": "What We Stand For - Brand Quick Guide, YMCA of the USA, updated March 2021, page 8",
+  "local_copy": "reference/YMCA-Brand-Quick-Guide-2021.pdf",
+  "note": "Hex values are as printed in the guide. The YMCA of East Tennessee's own mark uses purple_268 (#5c2e91), sampled from the colour mark on ymcaetn.org.",
+  "fonts": {
+    "primary": "Cachet Pro",
+    "fallback": "Verdana",
+    "rule": "Cachet Pro and Verdana are the only two fonts to be used for YMCA collateral. Use Verdana where Cachet Pro is unavailable, such as in the browser."
+  },
+  "tagline": "For a better us.®",
+  "areas_of_impact": [
+    "For Youth Development®",
+    "For Healthy Living",
+    "For Social Responsibility"
+  ],
+  "colors": {
+    "purple_268": { "hex": "#5c2e91", "pantone": "268C", "cmyk": [80, 100, 0, 0], "family": "purple" },
+    "purple_2415": { "hex": "#92278f", "pantone": "2415C", "cmyk": [50, 100, 0, 0], "family": "purple" },
+    "magenta_233": { "hex": "#c6168d", "pantone": "233C", "cmyk": [20, 100, 0, 0], "family": "purple" },
+    "cyan": { "hex": "#00aeef", "pantone": "Process Cyan C", "cmyk": [100, 0, 0, 0], "family": "blue" },
+    "blue_3005": { "hex": "#0089d0", "pantone": "3005C", "cmyk": [100, 30, 0, 0], "family": "blue" },
+    "blue_661": { "hex": "#0060af", "pantone": "661C", "cmyk": [100, 65, 0, 0], "family": "blue" },
+    "teal_7472": { "hex": "#20bdbe", "pantone": "7472C", "cmyk": [70, 0, 30, 0], "family": "teal" },
+    "green_3268": { "hex": "#01a490", "pantone": "3268C", "cmyk": [95, 0, 55, 0], "family": "teal" },
+    "teal_3298": { "hex": "#006b6b", "pantone": "3298C", "cmyk": [100, 55, 65, 0], "family": "teal" },
+    "red_1807": { "hex": "#a92b31", "pantone": "1807C", "cmyk": [39, 100, 100, 0], "family": "red" },
+    "red_485": { "hex": "#ed1c24", "pantone": "485C", "cmyk": [0, 100, 100, 0], "family": "red" },
+    "orange_166": { "hex": "#f15922", "pantone": "166C", "cmyk": [0, 80, 100, 0], "family": "orange" },
+    "orange_173": { "hex": "#dd5828", "pantone": "173C", "cmyk": [10, 80, 100, 0], "family": "orange" },
+    "orange_152": { "hex": "#f47920", "pantone": "152C", "cmyk": [0, 65, 100, 0], "family": "orange" },
+    "gold_137": { "hex": "#fcaf17", "pantone": "137C", "cmyk": [0, 35, 100, 0], "family": "orange" },
+    "gray": { "hex": "#636466", "pantone": "Cool Gray 11 C", "cmyk": [0, 0, 0, 75], "family": "neutral" },
+    "black": { "hex": "#231f20", "pantone": "Process Black C", "cmyk": [0, 0, 0, 100], "family": "neutral" },
+    "white": { "hex": "#ffffff", "pantone": null, "cmyk": [0, 0, 0, 0], "family": "neutral" }
+  }
+}

@@ -1,0 +1,45 @@
+/*
+ * Official YMCA colour palette.
+ *
+ * Transcribed from "What We Stand For — Brand Quick Guide", YMCA of the USA,
+ * updated March 2021, page 8. See reference/YMCA-Brand-Quick-Guide-2021.pdf.
+ * Pantone references are the guide's own; hex values are as printed there.
+ *
+ * The guide's rule: use only these colours. The logo has five colour families
+ * to choose from, and when the logo is paired with the areas of impact, the
+ * areas of impact take the primary colour from the logo.
+ *
+ * The YMCA of East Tennessee's own mark uses --ymca-purple-268 (#5c2e91);
+ * that was sampled from the colour mark on ymcaetn.org, not assumed.
+ */
+
+:root {
+  /* Purple — the family the YMCA of East Tennessee uses */
+  --ymca-purple-268: #5c2e91;  /* PMS 268C   C80 M100 Y0  K0 */
+  --ymca-purple-2415: #92278f; /* PMS 2415C  C50 M100 Y0  K0 */
+  --ymca-magenta-233: #c6168d; /* PMS 233C   C20 M100 Y0  K0 */
+
+  /* Blue */
+  --ymca-cyan: #00aeef;        /* PMS Process Cyan C  C100 M0  Y0 K0 */
+  --ymca-blue-3005: #0089d0;   /* PMS 3005C  C100 M30 Y0  K0 */
+  --ymca-blue-661: #0060af;    /* PMS 661C   C100 M65 Y0  K0 */
+
+  /* Teal / green — the official family closest to the calmer palette
+     used in the Grants & Outcomes deck */
+  --ymca-teal-7472: #20bdbe;   /* PMS 7472C  C70  M0  Y30 K0 */
+  --ymca-green-3268: #01a490;  /* PMS 3268C  C95  M0  Y55 K0 */
+  --ymca-teal-3298: #006b6b;   /* PMS 3298C  C100 M55 Y65 K0 */
+
+  /* Red / orange / gold */
+  --ymca-red-1807: #a92b31;    /* PMS 1807C  C39 M100 Y100 K0 */
+  --ymca-red-485: #ed1c24;     /* PMS 485C   C0  M100 Y100 K0 */
+  --ymca-orange-166: #f15922;  /* PMS 166C   C0  M80  Y100 K0 */
+  --ymca-orange-173: #dd5828;  /* PMS 173C   C10 M80  Y100 K0 */
+  --ymca-orange-152: #f47920;  /* PMS 152C   C0  M65  Y100 K0 */
+  --ymca-gold-137: #fcaf17;    /* PMS 137C   C0  M35  Y100 K0 */
+
+  /* Neutrals */
+  --ymca-gray: #636466;        /* PMS Cool Gray 11 C  K75 */
+  --ymca-black: #231f20;       /* PMS Process Black C K100 */
+  --ymca-white: #ffffff;
+}
