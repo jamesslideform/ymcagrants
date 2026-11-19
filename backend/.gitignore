@@ -7,3 +7,7 @@ build/
 .serverless/
 cdk.out/
 .aws-sam/
+
+# DynamoDB Local's on-disk database
+*.db
+shared-local-instance.db

@@ -1,7 +1,7 @@
 /*
  * Design tokens carried over from the product deck: deep teal-slate, muted
- * blue, sage, one warm accent for deadlines. Calming on purpose — this is a
- * screen someone looks at all day.
+ * blue, sage, one warm accent. Calming on purpose — this is a screen someone
+ * looks at all day.
  *
  * No UI framework yet. If the team wants one, replace these styles; the markup
  * is plain enough to survive it.
@@ -9,7 +9,6 @@
 
 :root {
   --ink: #13384a;
-  --ink-deep: #0d2a38;
   --blue: #2e6d8e;
   --blue-mid: #5793b0;
   --blue-tint: #dee9ee;
@@ -95,7 +94,7 @@ body {
 }
 
 .app__main {
-  max-width: 1100px;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
 }
@@ -106,32 +105,7 @@ body {
   gap: var(--gap-lg);
 }
 
-/* ---------------------------------------------------------- dashboard --- */
-
-.tile-row {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--gap);
-}
-
-.tile {
-  padding: 1.25rem;
-  border-radius: var(--radius);
-  background-color: var(--blue-tint);
-}
-
-.tile__value {
-  margin: 0 0 0.25rem;
-  font-size: 1.75rem;
-  font-weight: 600;
-  color: var(--ink);
-}
-
-.tile__label {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--text);
-}
+/* --------------------------------------------------------------- panel --- */
 
 .panel {
   padding: 1.25rem 1.5rem;
@@ -141,97 +115,75 @@ body {
 }
 
 .panel__title {
-  margin: 0 0 0.875rem;
+  margin: 0 0 1rem;
   font-size: 1rem;
   font-weight: 600;
   color: var(--ink);
 }
 
-.deadline-list,
-.progress-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
+/* ---------------------------------------------------------------- form -- */
+
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--gap);
 }
 
-.deadline-list__item {
+.field-grid + .field-grid {
+  margin-top: var(--gap);
+}
+
+.field {
   display: flex;
-  gap: 0.75rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid var(--line);
+  flex-direction: column;
 }
 
-.deadline-list__item:last-child {
-  border-bottom: none;
+.field--wide {
+  grid-column: span 2;
 }
 
-.deadline-list__date {
-  min-width: 7rem;
+.field__label {
+  margin-bottom: 0.3125rem;
+  font-size: 0.8125rem;
   font-weight: 600;
+  color: var(--ink);
+}
+
+.field__required {
   color: var(--gold);
 }
 
-.progress-list__item + .progress-list__item {
-  margin-top: 0.875rem;
-}
-
-.progress-list__header {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--gap);
-  margin-bottom: 0.375rem;
-  font-size: 0.875rem;
-}
-
-.progress-bar {
-  height: 8px;
-  border-radius: 4px;
-  background-color: var(--sage-tint);
-  overflow: hidden;
-}
-
-.progress-bar__fill {
-  height: 100%;
-  background-color: var(--sage);
-}
-
-/* -------------------------------------------------------------- grants -- */
-
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--gap);
-}
-
-.filter-group {
-  display: flex;
-  gap: 0.375rem;
-}
-
-.chip {
-  padding: 0.375rem 0.75rem;
+.field__input {
+  padding: 0.5rem 0.625rem;
   border: 1px solid var(--line);
-  border-radius: 999px;
+  border-radius: var(--radius);
   background-color: var(--surface);
   color: var(--text);
   font: inherit;
-  font-size: 0.875rem;
-  cursor: pointer;
+  font-size: 0.9375rem;
 }
 
-.chip:hover {
-  border-color: var(--blue-mid);
-}
-
-.chip--selected {
+.field__input:focus {
   border-color: var(--blue);
-  background-color: var(--blue);
-  color: var(--surface);
+  outline: 2px solid var(--blue-tint);
+  outline-offset: 1px;
+}
+
+.field__hint {
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  margin-top: var(--gap-lg);
 }
 
 .button {
-  padding: 0.5rem 1rem;
+  padding: 0.5rem 1.25rem;
   border: 1px solid transparent;
   border-radius: var(--radius);
   font: inherit;
@@ -244,10 +196,29 @@ body {
   color: var(--surface);
 }
 
+.button--primary:hover:not(:disabled) {
+  background-color: var(--ink);
+}
+
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+.notice {
+  margin-top: var(--gap);
+  padding: 0.625rem 0.875rem;
+  border-radius: var(--radius);
+  font-size: 0.9375rem;
+}
+
+.notice--success {
+  background-color: var(--sage-tint);
+  color: var(--ink);
+  border-left: 3px solid var(--sage);
+}
+
+/* --------------------------------------------------------------- table --- */
 
 .table {
   width: 100%;
@@ -289,12 +260,17 @@ body {
 
 .muted {
   display: block;
+  margin: 0.5rem 0 0;
   font-size: 0.8125rem;
   color: var(--muted);
 }
 
+.form-actions .muted {
+  margin: 0;
+}
+
 .state-message {
-  padding: 1.25rem 1.5rem;
+  padding: 1rem 1.25rem;
   border: 1px solid var(--line);
   border-left: 3px solid var(--blue-mid);
   border-radius: var(--radius);

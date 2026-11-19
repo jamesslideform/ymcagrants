@@ -1,49 +1,67 @@
 # Backend
 
-**Not scaffolded on purpose.** The backend owner picks the stack. Node + AWS is the
-expectation, but nothing here assumes it.
-
-What this directory owes the rest of the project:
+**Owner: Mike.** Node + AWS, DynamoDB for storage, per the kickoff whiteboard. The shape
+inside this directory is yours — what follows is only what the rest of the project depends
+on.
 
 ## The contract
 
-Implement [`../docs/api-contract.md`](../docs/api-contract.md) over the schema in
-[`../docs/data-model.md`](../docs/data-model.md). Those two documents are the agreement —
-if something in them is wrong, change it in a PR rather than diverging quietly.
+Implement [`../docs/api-contract.md`](../docs/api-contract.md) over the table design in
+[`../docs/data-model.md`](../docs/data-model.md). Those two documents are the agreement
+between us; if something in them is wrong, change it in a PR rather than diverging quietly.
+
+Six endpoints carry the whole proof of concept:
+
+```
+POST   /api/grants             create from the form
+GET    /api/grants             list, newest submission first
+GET    /api/grants/:grantId    one grant with its outcomes
+POST   /api/outcomes           record an outcome
+GET    /api/outcomes           list, optional grantId / zipCode filters
+GET    /api/outcomes/by-zip    totals grouped by zip — the outcomes view
+```
 
 ## What the frontend assumes
 
-- The API is reachable at `/api`, and the Vite dev server proxies `/api` to
-  `http://localhost:3000`. If you serve on a different port, change
-  `frontend/vite.config.ts` in the same PR, or set `VITE_API_BASE_URL`.
-- Lists come back as `{ items, total }`, errors as
-  `{ error: { code, message } }` with a meaningful HTTP status.
+- The API answers at `/api`, and the Vite dev server proxies `/api` to
+  `http://localhost:3000`. Serving somewhere else is fine — change the proxy target in
+  `frontend/vite.config.ts` in the same PR, or James sets `VITE_API_BASE_URL`.
+- Lists come back as `{ items, total }`; errors as `{ error: { code, message } }` with a
+  meaningful HTTP status.
+- Money is a decimal **string** on the wire (`"48000.00"`), stored as a DynamoDB number.
+- Partial records save. Only `name` + `funder` on a grant, and `grantId` + `zipCode` on an
+  outcome, are required. Everything else may arrive `null`.
 - CORS only matters if you skip the dev proxy. The proxy is simpler.
 
-## Expected environment
+## Running it
 
-Copy `.env.example` to `.env`. At minimum:
+Copy `.env.example` to `.env`:
 
 ```
-DATABASE_URL=postgres://localhost:5432/ymcagrants
+AWS_REGION=us-east-2
+DYNAMODB_TABLE=ymcagrants
 PORT=3000
 ```
 
-## Things worth deciding early (and writing down here)
+For local development, either point at a real table or run DynamoDB Local and set
+`DYNAMODB_ENDPOINT=http://localhost:8000`. Either way, the frontend only sees HTTP on 3000.
 
-- **Migrations.** Whatever the tool, migrations are checked in and run forward only. The
-  frontend developer needs to recreate your database from a clean clone.
-- **Seed data.** Three real-ish grants with programs, deliverables, and a few measurements.
-  Everyone develops against the same data, and demos stop depending on who typed what.
-- **Deployment.** AWS is expected. Keep it boring and cheap — the YMCA inherits whatever we
-  build, and "assume whoever maintains this in a year was not at the hackathon" is a real
-  constraint, not a slogan.
-- **Database access for the MCP layer (phase 4).** Plan for a read-only Postgres role now.
-  The MCP server gets aggregates and one narrow write path for saved views; it never gets
-  raw SQL from the model or client-level rows.
+## Worth deciding early, and writing down here
+
+- **Express on Lambda, or plain Lambda handlers behind API Gateway.** One Express app
+  behind a single function is usually faster to demo and trivially runnable locally; split
+  handlers are tidier later. Your call — just write down which, so James knows what he's
+  pointing at.
+- **Table creation.** Check in whatever creates the table and its `gsi1` index (SAM, CDK,
+  Terraform, or a script). "It exists in my account" doesn't survive the weekend.
+- **Seed data.** Three or four real-ish grants with outcomes in a couple of zip codes, so
+  the by-zip view has something to show in the demo and we're not typing during it.
+- **IDs.** The backend generates `grantId` and `outcomeId` (UUIDs). The frontend never
+  invents one.
 
 ## Privacy, in code
 
-The schema has no place for client names, addresses, dates of birth, or case notes, and it
-should stay that way. Outcome data is counts, percentages, and category labels. If a funder
-asks for client-level reporting, that's a conversation with Kelly before it is a column.
+The table has no place for a client name, address, date of birth, or case note, and it
+should stay that way. `socialStatus` is a category like "youth 6-12" and `peopleServed` is
+a count — outcome items describe a group in a zip code, not a person. If a funder asks for
+client-level reporting, that's a conversation with Kelly before it is an attribute.

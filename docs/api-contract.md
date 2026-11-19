@@ -1,22 +1,23 @@
-# API contract
+# API contract — proof of concept
 
-The agreement between `frontend/` and `backend/`. The frontend's API client
+The agreement between `frontend/` (James) and `backend/` (Mike). The frontend's client
 (`frontend/src/api/client.ts`) and types (`frontend/src/types.ts`) are written against this
-document; the backend is free to implement it in whatever stack its owner picks.
+document.
 
-Change it in a PR both sides review, and update the client and types in the same change.
+Scoped to the whiteboard: submit a grant, record an outcome, read outcomes by zip. Change
+it in a PR both of us review, and move the client and types in the same change.
 
 ## Ground rules
 
-- Base path `/api`. The dev server proxies `/api` → `http://localhost:3000`.
-- JSON in, JSON out. `Content-Type: application/json`.
-- Dates are ISO-8601. Money is a string decimal (`"12000.00"`) so nothing rounds in transit.
-- Lists return `{ "items": [...], "total": 123 }` — never a bare array, so paging can be
+- Base path `/api`. The Vite dev server proxies `/api` → `http://localhost:3000`.
+- JSON in, JSON out. Dates are `YYYY-MM-DD`; timestamps are ISO-8601.
+- Money crosses the wire as a decimal **string** (`"12000.00"`) so nothing rounds in
+  transit. The backend stores it as a DynamoDB number.
+- Lists answer `{ "items": [...], "total": 123 }` — never a bare array, so paging can be
   added without breaking callers.
-- Errors return the HTTP status plus `{ "error": { "code": "...", "message": "..." } }`.
-  `code` is machine-readable and stable; `message` is for humans.
-- No auth for the hackathon build. Everything is additive behind a session cookie later —
-  don't bake API keys into the client.
+- Errors answer the HTTP status plus `{ "error": { "code": "...", "message": "..." } }`.
+  `code` is stable and machine-readable; `message` is for people.
+- No auth in the PoC. Don't bake keys into the client; a session cookie goes in later.
 
 ## Endpoints
 
@@ -24,126 +25,92 @@ Change it in a PR both sides review, and update the client and types in the same
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/api/grants` | List. Filters: `status`, `funderId`, `programId`, `periodStart`, `periodEnd`, `q`. |
-| `POST` | `/api/grants` | Create. |
-| `GET` | `/api/grants/:id` | One grant with its funder, programs, deliverables, and measures. |
-| `PATCH` | `/api/grants/:id` | Partial update. |
-| `DELETE` | `/api/grants/:id` | Soft delete. |
+| `POST` | `/api/grants` | Create a grant from the form. Returns the created grant with its `grantId`. |
+| `GET` | `/api/grants` | List grants, newest submission first. |
+| `GET` | `/api/grants/:grantId` | One grant with its outcomes. |
 
-### Supporting records
+`POST /api/grants` request:
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` `POST` | `/api/funders` | |
-| `GET` `POST` | `/api/programs` | |
-| `GET` `POST` | `/api/deliverables` | `GET` filters: `grantId`, `dueBefore`, `status`. |
-| `PATCH` | `/api/deliverables/:id` | Mark submitted. |
+```json
+{
+  "name": "Youth Development 2026",
+  "funder": "United Way of Greater Knoxville",
+  "submissionDate": "2026-01-15",
+  "startDate": "2026-03-01",
+  "lengthMonths": 12,
+  "dueDate": "2026-03-31",
+  "amountRequested": "50000.00",
+  "amountReceived": "48000.00"
+}
+```
+
+Only `name` and `funder` are required. Everything else may be omitted or `null` — partial
+records have to save, because that's how this data actually arrives.
+
+Response (`201`):
+
+```json
+{
+  "grantId": "6f1c…",
+  "name": "Youth Development 2026",
+  "funder": "United Way of Greater Knoxville",
+  "submissionDate": "2026-01-15",
+  "startDate": "2026-03-01",
+  "lengthMonths": 12,
+  "dueDate": "2026-03-31",
+  "amountRequested": "50000.00",
+  "amountReceived": "48000.00",
+  "createdAt": "2026-01-15T14:02:11Z"
+}
+```
+
+`GET /api/grants/:grantId` returns the same object plus `"outcomes": [ … ]`.
 
 ### Outcomes
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` `POST` | `/api/measure-definitions` | The shared measure library. |
-| `POST` | `/api/grants/:id/measures` | Attach a measure to a grant with target and cadence. |
-| `GET` `POST` | `/api/measurements` | Record a value for a period. `GET` filters: `grantId`, `grantMeasureId`, `periodStart`, `periodEnd`. |
-| `GET` | `/api/outcomes/summary` | Progress toward target, per grant measure. Params: `grantId`, `programId`, `periodStart`, `periodEnd`. |
+| `POST` | `/api/outcomes` | Record an outcome against a grant. |
+| `GET` | `/api/outcomes` | List outcomes. Optional filters: `grantId`, `zipCode`. |
+| `GET` | `/api/outcomes/by-zip` | **The outcomes-by-zip view.** Totals grouped by zip code. |
 
-### Dashboard and saved views
+`POST /api/outcomes` request:
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `GET` | `/api/dashboard` | The default leadership view in one call: active funding, upcoming deadlines, people served, outcome progress. |
-| `GET` `POST` | `/api/saved-views` | List and create stored query definitions. |
-| `GET` `PATCH` `DELETE` | `/api/saved-views/:id` | |
-| `POST` | `/api/saved-views/:id/run` | Execute a view, return rows ready to chart. |
+```json
+{
+  "grantId": "6f1c…",
+  "peopleServed": 412,
+  "socialStatus": "youth 6-12",
+  "zipCode": "37902",
+  "descriptionOfFunding": "After-school programming at the Knoxville branch",
+  "result": "Met the target of 350 by the third quarter"
+}
+```
 
-### Import
+`grantId` and `zipCode` are required — without them the record can't be attributed or
+grouped. `peopleServed` may be `null` when the count isn't in yet.
 
-| Method | Path | Purpose |
-| --- | --- | --- |
-| `POST` | `/api/import/preview` | Upload CSV, return parsed rows plus a column mapping guess. Writes nothing. |
-| `POST` | `/api/import/commit` | Apply a reviewed mapping. |
-
-Preview-then-commit is deliberate: spreadsheet imports are where bad data enters, and the
-grants manager should see what will happen before it does.
-
-## Example payloads
-
-`GET /api/grants?status=active`
+`GET /api/outcomes/by-zip` response:
 
 ```json
 {
   "items": [
     {
-      "id": "6f1c…",
-      "title": "Youth Development 2026",
-      "funder": { "id": "a21e…", "name": "United Way of Greater Knoxville" },
-      "awardAmount": "48000.00",
-      "periodStart": "2026-01-01",
-      "periodEnd": "2026-12-31",
-      "status": "active",
-      "programs": [{ "id": "c7b0…", "name": "Y Learning after-school" }],
-      "nextDeadline": { "id": "9d4a…", "title": "Q1 outcomes report", "dueDate": "2026-03-31" }
+      "zipCode": "37902",
+      "peopleServed": 412,
+      "outcomeCount": 3,
+      "grantCount": 2
     }
   ],
   "total": 1
 }
 ```
 
-`GET /api/outcomes/summary?grantId=6f1c…`
+`peopleServed` is the sum across that zip's outcomes; `grantCount` is the number of
+distinct grants contributing to it.
 
-```json
-{
-  "items": [
-    {
-      "grantMeasureId": "4b77…",
-      "name": "Youth served",
-      "valueType": "count",
-      "unit": "youth",
-      "targetValue": "350",
-      "currentValue": "412",
-      "percentOfTarget": 117.7,
-      "cadence": "quarterly",
-      "lastRecordedPeriodEnd": "2026-09-30",
-      "hasGaps": false
-    }
-  ],
-  "total": 1
-}
-```
+## Deferred, on purpose
 
-`POST /api/measurements`
-
-```json
-{
-  "grantMeasureId": "4b77…",
-  "periodStart": "2026-07-01",
-  "periodEnd": "2026-09-30",
-  "numericValue": "138",
-  "isEstimated": false,
-  "sourceNote": "DaxKo attendance export",
-  "recordedBy": "kelly"
-}
-```
-
-## Saved view definition
-
-The `definition` field is the whole contract between the UI, the saved view, and the MCP
-layer. Keep it declarative — no SQL, no code.
-
-```json
-{
-  "metric": "measurement_sum",
-  "measureDefinitionId": "1a2b…",
-  "groupBy": "program",
-  "filters": {
-    "status": ["active"],
-    "periodStart": "2026-01-01",
-    "periodEnd": "2026-12-31"
-  },
-  "chart": "bar"
-}
-```
-
-The backend translates this into a parameterized query. The model never writes SQL: the
-MCP server fills in this same structure, which is what keeps Claude inside the guardrails.
+Not in the PoC, named here so nobody builds around their absence by accident: the
+flexible measure library, saved views, the MCP tool surface, CSV import, and auth. See the
+product deck in `docs/` for where they land.

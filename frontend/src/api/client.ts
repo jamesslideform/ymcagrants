@@ -1,19 +1,18 @@
 /**
- * Typed client for the API described in docs/api-contract.md.
+ * Typed client for the API in docs/api-contract.md.
  *
- * Unset VITE_API_BASE_URL means "/api", which the Vite dev server proxies to
- * the backend on localhost:3000.
+ * Unset VITE_API_BASE_URL means "/api", which the Vite dev server proxies to the
+ * backend on localhost:3000.
  */
 
 import type {
-  DashboardSummary,
   Grant,
-  GrantStatus,
+  GrantInput,
+  GrantWithOutcomes,
   ListResponse,
-  MeasureDefinition,
-  Measurement,
-  OutcomeSummary,
-  SavedView,
+  Outcome,
+  OutcomeInput,
+  OutcomesByZip,
 } from "../types";
 
 const baseUrl: string = import.meta.env.VITE_API_BASE_URL ?? "/api";
@@ -34,7 +33,7 @@ export class ApiError extends Error {
     this.code = code;
   }
 
-  /** True when the backend simply isn't running yet — common before phase 1. */
+  /** True when the backend simply isn't running yet. */
   get isUnreachable(): boolean {
     return this.status === 0;
   }
@@ -66,7 +65,7 @@ async function request<T>(
       headers: body === undefined ? undefined : { "Content-Type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
     });
-  } catch (cause) {
+  } catch {
     throw new ApiError(
       0,
       "network_unreachable",
@@ -94,45 +93,30 @@ async function request<T>(
   return (await response.json()) as T;
 }
 
-export interface GrantFilters {
-  status?: GrantStatus;
-  funderId?: string;
-  programId?: string;
-  q?: string;
-}
-
 export const api = {
-  listGrants(filters: GrantFilters = {}): Promise<ListResponse<Grant>> {
-    return request<ListResponse<Grant>>("/grants", { query: { ...filters } });
-  },
-
-  getGrant(id: string): Promise<Grant> {
-    return request<Grant>(`/grants/${id}`);
-  },
-
-  createGrant(grant: Partial<Grant>): Promise<Grant> {
+  createGrant(grant: GrantInput): Promise<Grant> {
     return request<Grant>("/grants", { method: "POST", body: grant });
   },
 
-  getDashboard(): Promise<DashboardSummary> {
-    return request<DashboardSummary>("/dashboard");
+  listGrants(): Promise<ListResponse<Grant>> {
+    return request<ListResponse<Grant>>("/grants");
   },
 
-  listMeasureDefinitions(): Promise<ListResponse<MeasureDefinition>> {
-    return request<ListResponse<MeasureDefinition>>("/measure-definitions");
+  getGrant(grantId: string): Promise<GrantWithOutcomes> {
+    return request<GrantWithOutcomes>(`/grants/${grantId}`);
   },
 
-  getOutcomeSummary(grantId: string): Promise<ListResponse<OutcomeSummary>> {
-    return request<ListResponse<OutcomeSummary>>("/outcomes/summary", {
-      query: { grantId },
-    });
+  createOutcome(outcome: OutcomeInput): Promise<Outcome> {
+    return request<Outcome>("/outcomes", { method: "POST", body: outcome });
   },
 
-  recordMeasurement(measurement: Partial<Measurement>): Promise<Measurement> {
-    return request<Measurement>("/measurements", { method: "POST", body: measurement });
+  listOutcomes(filters: { grantId?: string; zipCode?: string } = {}): Promise<
+    ListResponse<Outcome>
+  > {
+    return request<ListResponse<Outcome>>("/outcomes", { query: { ...filters } });
   },
 
-  listSavedViews(): Promise<ListResponse<SavedView>> {
-    return request<ListResponse<SavedView>>("/saved-views");
+  getOutcomesByZip(): Promise<ListResponse<OutcomesByZip>> {
+    return request<ListResponse<OutcomesByZip>>("/outcomes/by-zip");
   },
 };
