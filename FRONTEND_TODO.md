@@ -6,6 +6,28 @@ Branch: `initiatives/frontend_0_1`
 
 ---
 
+## Deployed
+
+**https://ymca-grants-outcomes.redeep.dev** — unlisted, so the link works for anyone who has
+it but it isn't advertised. The full link including the `?share=` token is what test users
+need; it sets a cookie on first visit.
+
+It runs the **stub API**, so: the seven grants are fictional, anything a tester enters is
+gone on reload, and nothing is shared between testers. Good for "is this screen
+understandable", useless for real data entry. Say so when you send the link.
+
+Redeploy after a change:
+
+```bash
+cd frontend && npm run build
+redeepctl publish ./dist --target managed \
+  --id 53070C68-BEC9-4052-89FA-AAF38DAB6604 \
+  --name "YMCA Grants & Outcomes" --kind page --entry index.html --visibility unlisted
+```
+
+Pass `--id` or it publishes a second site. Versions are retained (up to 5);
+`redeepctl deployments rollback <id> <version>` goes back.
+
 ## Status
 
 **Working today, against a stub API with example data.** No login — the prototype runs as
@@ -139,6 +161,7 @@ Both are in `docs/api-contract.md` already; flagging them so they aren't a surpr
 | Decision | Why | Revisit when |
 | --- | --- | --- |
 | React Router | Kelly needs to bookmark and share a grant URL; the back button has to work | — |
+| **Hash** routing, not history | Redeep's managed static hosting has no SPA fallback — measured 2026-11-19: publishing with `--spa` still 404s `/grants` and `/nope`. With history routing a tester who refreshes anywhere but `/`, or opens a shared grant link, gets a 404. Hashing keeps every request at `/`. Cost is the `#` in `/#/grants/g-1001` | Moving to a host that rewrites unknown paths to `index.html` — then switch back in `main.tsx` |
 | Stub at the fetch layer, not in the client | Exercises the real request path, so migration holds no surprises | Migration day |
 | Filters live in the URL (`/grants?status=active`) | A filtered list is shareable, and the back button behaves | — |
 | `useApiResource` over TanStack Query | ~50 lines, no dependency, enough for 7 screens | Caching or invalidation starts hurting |
