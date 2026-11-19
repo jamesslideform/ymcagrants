@@ -5,8 +5,18 @@ import { ApiErrorMessage, StateMessage } from "../components/StateMessage";
 import { StatusBadge } from "../components/StatusBadge";
 import { formatDate, formatMoney, formatNumber } from "../format";
 import { useApiResource } from "../hooks/useApiResource";
-import type { OverviewSummary, UpcomingDeadline } from "../types";
+import type { GrantStatus, OverviewSummary, UpcomingDeadline } from "../types";
 import { GRANT_STATUS_LABELS } from "../types";
+
+/**
+ * Statuses left out of the overview's breakdown.
+ *
+ * Declined grants are still first-class everywhere else — the new-grant form
+ * offers the status, the grants list filters by it, and the badge renders it.
+ * They are only absent from this one panel, until there's a better way to show
+ * a grant that was asked for and refused.
+ */
+const HIDDEN_FROM_BREAKDOWN: readonly GrantStatus[] = ["declined"];
 
 /**
  * Kelly's landing page: where the money is, what state each grant is in, what
@@ -27,9 +37,12 @@ export function OverviewPage() {
     return <StateMessage title="No data yet" />;
   }
 
+  const statusCounts = data.statusCounts.filter(
+    (entry) => !HIDDEN_FROM_BREAKDOWN.includes(entry.status),
+  );
   const maxStatusCount: number = Math.max(
     1,
-    ...data.statusCounts.map((entry) => entry.count),
+    ...statusCounts.map((entry) => entry.count),
   );
 
   return (
@@ -73,7 +86,7 @@ export function OverviewPage() {
             </Link>
           </div>
           <ul className="bar-list">
-            {data.statusCounts.map((entry) => (
+            {statusCounts.map((entry) => (
               <li key={entry.status} className="bar-list__item">
                 <div className="bar-list__header">
                   <Link to={`/grants?status=${entry.status}`} className="bar-list__label">
