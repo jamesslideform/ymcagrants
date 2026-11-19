@@ -2,7 +2,7 @@
 
 Working notes for the frontend prototype. **Owner: James.** Updated 2026-11-19.
 
-Branch: `initiatives/frontend_0_1`
+On `main` — `initiatives/frontend_0_1` was merged (#3) and deleted.
 
 ---
 
@@ -59,8 +59,13 @@ npm run dev      # http://localhost:5173
   grant, create-then-appears-in-list, create-then-overview-updates, new zip row appears,
   outcome rejected against an unknown grant.
 - All 8 routes render without throwing.
-- **Not yet checked in a real browser** — the agent environment blocks loopback URLs. Run
-  `npm run dev` and click through before demoing.
+- **Seen in a real browser**, on the deployed URL: the overview renders correctly (tiles,
+  status bars, the overdue deadline flagged, outcomes by zip, footer lockup), and a cold
+  load of `/#/grants/g-1001` resolves to the grant detail with both its outcomes. Console
+  clean on both.
+- **Still unseen in a browser:** submitting either form, the grants-list filters and search,
+  mobile widths, and keyboard navigation. The stub-API checks cover the form logic, but
+  nobody has watched a browser do it.
 
 ---
 
@@ -123,7 +128,8 @@ Both are in `docs/api-contract.md` already; flagging them so they aren't a surpr
 ## TODO
 
 ### Next up
-- [ ] Click through in a real browser; fix whatever the SSR check couldn't see.
+- [ ] Click the **forms** through in a real browser — add a grant, record an outcome, use the
+      list filters. The overview and grant detail have been checked; these have not.
 - [ ] Edit a grant (`/grants/:grantId/edit`) — right now a typo means re-creating it.
 - [ ] Empty state for a brand-new install: zero grants should read as a welcome, not a bug.
 - [ ] Form validation before submit — currently the stub rejects and we surface the error,
