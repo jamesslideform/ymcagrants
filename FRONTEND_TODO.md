@@ -1,0 +1,147 @@
+# Frontend status, architecture, and TODO
+
+Working notes for the frontend prototype. **Owner: James.** Updated 2026-11-19.
+
+Branch: `initiatives/frontend_0_1`
+
+---
+
+## Status
+
+**Working today, against a stub API with example data.** No login — the prototype runs as
+the grants manager. Every screen below is clickable end to end: add a grant and it shows up
+in the list, the overview totals, and the recent list; record an outcome and the by-zip
+rollup moves.
+
+| Screen | Route | State |
+| --- | --- | --- |
+| Overview | `/` | Built — funding tiles, grants by status, deadlines, outcomes by zip, recently added |
+| Grants list | `/grants` | Built — status filter + search, both held in the URL |
+| Grant detail | `/grants/:grantId` | Built — terms, deadline, every outcome on the grant |
+| New grant | `/grants/new` | Built — redirects to the new grant's detail page |
+| Record outcome | `/outcomes/new` · `/grants/:grantId/outcomes/new` | Built — grant pre-filled when reached from a grant |
+| Outcomes | `/outcomes` | Built — by-zip rollup plus all records |
+| Not found | `*` | Built |
+
+```bash
+cd frontend
+npm install
+npm run dev      # http://localhost:5173
+```
+
+### Verified
+
+- `tsc --noEmit` and the production build pass.
+- 19 checks over the stub API through the real client: overview aggregates, status filter,
+  search, grant detail with embedded outcomes, 404 on a missing grant, 422 on an empty
+  grant, create-then-appears-in-list, create-then-overview-updates, new zip row appears,
+  outcome rejected against an unknown grant.
+- All 8 routes render without throwing.
+- **Not yet checked in a real browser** — the agent environment blocks loopback URLs. Run
+  `npm run dev` and click through before demoing.
+
+---
+
+## Architecture
+
+```
+pages/            One file per screen. Data in, markup out.
+components/       Field, SelectField, TextAreaField, StatusBadge, StateMessage.
+hooks/            useApiResource — fetch on mount, expose loading/error/data.
+api/client.ts     The only place fetch is called. Typed against docs/api-contract.md.
+types.ts          Domain types. Mirrors the contract.
+format.ts         Money, number, and date formatting.
+mocks/            The stub API. Deleted at migration.
+styles.css        Design tokens from the product deck, then plain CSS.
+```
+
+**Rule:** no component calls `fetch` directly. Everything goes through `api` in
+`src/api/client.ts`, which is why swapping the stub for Mike's backend touches no page.
+
+### How the stub works
+
+`src/mocks/mockServer.ts` patches `globalThis.fetch` and answers `/api/*` from an in-memory
+store seeded by `src/mocks/fixtures.ts`. Anything that isn't `/api` falls through to the
+real network.
+
+This sits at the **fetch layer on purpose** rather than inside the client: the app runs its
+real request code — URL building, status handling, the error envelope, JSON parsing — so
+the migration can't surprise us with a code path that was never exercised. It also means
+POSTs are stateful for the browser session, which is what makes the demo feel real.
+Reloading resets to the fixtures.
+
+### Migrating to Mike's backend
+
+1. Set `VITE_API_MODE=live` in `frontend/.env.local`.
+2. Confirm the dev proxy target in `vite.config.ts` matches where the API listens.
+3. Delete `src/mocks/` and the import block in `main.tsx`.
+
+That's the whole migration on this side. No page, hook, or client change — provided the
+backend matches `docs/api-contract.md`. Do it one endpoint at a time if useful: the stub
+only answers routes it recognizes, so anything unimplemented 404s loudly rather than
+silently returning fake data.
+
+---
+
+## For Mike — contract changes made here
+
+Both are in `docs/api-contract.md` already; flagging them so they aren't a surprise.
+
+1. **`status` is back on the grant** (`prospect | submitted | active | closed | declined`).
+   The overview is built around the status breakdown, so it can't be derived. Required on
+   create; the form defaults to `prospect`.
+2. **`GET /api/overview` is new.** One request returning what the landing page needs:
+   totals, status counts, people served, top zips, upcoming deadlines, recent grants. It's
+   all derivable from grants + outcomes, so it can start as an in-handler aggregate. The
+   alternative — four round trips from the browser — makes the first screen Kelly sees the
+   slowest one.
+
+---
+
+## TODO
+
+### Next up
+- [ ] Click through in a real browser; fix whatever the SSR check couldn't see.
+- [ ] Edit a grant (`/grants/:grantId/edit`) — right now a typo means re-creating it.
+- [ ] Empty state for a brand-new install: zero grants should read as a welcome, not a bug.
+- [ ] Form validation before submit — currently the stub rejects and we surface the error,
+      which is correct but late. Required-field hints on blur.
+- [ ] Loading skeletons instead of "Loading…" text on the overview.
+
+### Before anyone demos it
+- [ ] Keyboard pass: focus rings on chips and nav, tab order through the forms.
+- [ ] Mobile width — the tables need a horizontal scroll container below ~700px.
+- [ ] Decide whether the demo runs on the stub or the real backend, and rehearse that one.
+
+### After the backend lands
+- [ ] Migrate per the steps above, one endpoint at a time.
+- [ ] Optimistic updates, or at least keep the form filled when a save fails.
+- [ ] Pagination once the grant list outgrows one screen (`{ items, total }` already allows it).
+
+### Deferred, named so they stay decisions
+- [ ] **Auth.** No login by design for the prototype. When it lands, the route guard goes in
+      `App.tsx` and the token goes in the `request()` helper in `client.ts` — nowhere else.
+- [ ] **Deliverables as records.** Today a grant has one `dueDate`. Real grants have several
+      deliverables with their own dates; that's a backend model change first.
+- [ ] **Funders and programs as records**, instead of free text on the grant.
+- [ ] **Flexible outcome measures** — the deck's measure library, replacing today's six
+      fixed outcome fields. The big one. See `docs/data-model.md`.
+- [ ] **Saved views and the MCP layer** — phases 3 and 4 in the README.
+- [ ] **Export** to CSV/PDF for funder reports.
+- [ ] **Tests.** No runner yet. When Vitest goes in, start by pinning the stub-API checks
+      listed under Verified — they're written and were thrown away to avoid a half-wired
+      test setup.
+
+---
+
+## Decisions
+
+| Decision | Why | Revisit when |
+| --- | --- | --- |
+| React Router | Kelly needs to bookmark and share a grant URL; the back button has to work | — |
+| Stub at the fetch layer, not in the client | Exercises the real request path, so migration holds no surprises | Migration day |
+| Filters live in the URL (`/grants?status=active`) | A filtered list is shareable, and the back button behaves | — |
+| `useApiResource` over TanStack Query | ~50 lines, no dependency, enough for 7 screens | Caching or invalidation starts hurting |
+| Plain CSS with deck tokens | No framework to fight during a hackathon | Someone wants a component library — decide before much is built on it |
+| Money as decimal strings | Floats lose cents; formatting happens at the edge | — |
+| Blank input saves as `null`, not `""` | Partial records are legal; empty strings pretending to be data are not | — |

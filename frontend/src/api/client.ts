@@ -1,18 +1,20 @@
 /**
  * Typed client for the API in docs/api-contract.md.
  *
- * Unset VITE_API_BASE_URL means "/api", which the Vite dev server proxies to the
- * backend on localhost:3000.
+ * Unset VITE_API_BASE_URL means "/api", which is either the Vite dev proxy to
+ * the real backend or the stub in src/mocks, depending on VITE_API_MODE.
  */
 
 import type {
   Grant,
   GrantInput,
+  GrantStatus,
   GrantWithOutcomes,
   ListResponse,
   Outcome,
   OutcomeInput,
   OutcomesByZip,
+  OverviewSummary,
 } from "../types";
 
 const baseUrl: string = import.meta.env.VITE_API_BASE_URL ?? "/api";
@@ -33,9 +35,14 @@ export class ApiError extends Error {
     this.code = code;
   }
 
-  /** True when the backend simply isn't running yet. */
+  /** True when the API couldn't be reached at all. */
   get isUnreachable(): boolean {
     return this.status === 0;
+  }
+
+  /** True when the record asked for doesn't exist. */
+  get isNotFound(): boolean {
+    return this.status === 404;
   }
 }
 
@@ -93,27 +100,38 @@ async function request<T>(
   return (await response.json()) as T;
 }
 
+export interface GrantFilters {
+  status?: GrantStatus;
+  /** Free text across name and funder. */
+  q?: string;
+}
+
 export const api = {
-  createGrant(grant: GrantInput): Promise<Grant> {
-    return request<Grant>("/grants", { method: "POST", body: grant });
+  /** Everything the overview page needs, in one request. */
+  getOverview(): Promise<OverviewSummary> {
+    return request<OverviewSummary>("/overview");
   },
 
-  listGrants(): Promise<ListResponse<Grant>> {
-    return request<ListResponse<Grant>>("/grants");
+  listGrants(filters: GrantFilters = {}): Promise<ListResponse<Grant>> {
+    return request<ListResponse<Grant>>("/grants", { query: { ...filters } });
   },
 
   getGrant(grantId: string): Promise<GrantWithOutcomes> {
     return request<GrantWithOutcomes>(`/grants/${grantId}`);
   },
 
-  createOutcome(outcome: OutcomeInput): Promise<Outcome> {
-    return request<Outcome>("/outcomes", { method: "POST", body: outcome });
+  createGrant(grant: GrantInput): Promise<Grant> {
+    return request<Grant>("/grants", { method: "POST", body: grant });
   },
 
   listOutcomes(filters: { grantId?: string; zipCode?: string } = {}): Promise<
     ListResponse<Outcome>
   > {
     return request<ListResponse<Outcome>>("/outcomes", { query: { ...filters } });
+  },
+
+  createOutcome(outcome: OutcomeInput): Promise<Outcome> {
+    return request<Outcome>("/outcomes", { method: "POST", body: outcome });
   },
 
   getOutcomesByZip(): Promise<ListResponse<OutcomesByZip>> {

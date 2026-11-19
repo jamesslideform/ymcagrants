@@ -26,8 +26,12 @@ it in a PR both of us review, and move the client and types in the same change.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `POST` | `/api/grants` | Create a grant from the form. Returns the created grant with its `grantId`. |
-| `GET` | `/api/grants` | List grants, newest submission first. |
+| `GET` | `/api/grants` | List grants, newest submission first. Optional filters: `status`, `q` (free text over name and funder). |
 | `GET` | `/api/grants/:grantId` | One grant with its outcomes. |
+
+**`status`** is one of `prospect`, `submitted`, `active`, `closed`, `declined`. It is
+required on create (the form defaults to `prospect`) and drives the overview breakdown, so
+it can't be derived from the amounts or dates.
 
 `POST /api/grants` request:
 
@@ -35,6 +39,7 @@ it in a PR both of us review, and move the client and types in the same change.
 {
   "name": "Youth Development 2026",
   "funder": "United Way of Greater Knoxville",
+  "status": "active",
   "submissionDate": "2026-01-15",
   "startDate": "2026-03-01",
   "lengthMonths": 12,
@@ -44,8 +49,8 @@ it in a PR both of us review, and move the client and types in the same change.
 }
 ```
 
-Only `name` and `funder` are required. Everything else may be omitted or `null` — partial
-records have to save, because that's how this data actually arrives.
+Only `name`, `funder`, and `status` are required. Everything else may be omitted or
+`null` — partial records have to save, because that's how this data actually arrives.
 
 Response (`201`):
 
@@ -54,6 +59,7 @@ Response (`201`):
   "grantId": "6f1c…",
   "name": "Youth Development 2026",
   "funder": "United Way of Greater Knoxville",
+  "status": "active",
   "submissionDate": "2026-01-15",
   "startDate": "2026-03-01",
   "lengthMonths": 12,
@@ -108,6 +114,49 @@ grouped. `peopleServed` may be `null` when the count isn't in yet.
 
 `peopleServed` is the sum across that zip's outcomes; `grantCount` is the number of
 distinct grants contributing to it.
+
+### Overview
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/api/overview` | Everything the landing page needs, in one request. |
+
+All of it is derivable from grants + outcomes, so it can start life as an aggregate inside
+the handler. It exists as one endpoint because the alternative — four round trips from the
+browser — makes the first screen Kelly sees the slowest one.
+
+```json
+{
+  "grantCount": 7,
+  "activeGrantCount": 3,
+  "totalRequested": "237500.00",
+  "totalReceived": "135500.00",
+  "statusCounts": [
+    { "status": "active", "count": 3, "amountRequested": "100500.00", "amountReceived": "95500.00" }
+  ],
+  "peopleServedTotal": 1008,
+  "outcomeCount": 6,
+  "zipCount": 4,
+  "topZips": [
+    { "zipCode": "37902", "peopleServed": 494, "outcomeCount": 2, "grantCount": 2 }
+  ],
+  "upcomingDeadlines": [
+    {
+      "grantId": "6f1c…",
+      "name": "Youth Development 2026",
+      "funder": "United Way of Greater Knoxville",
+      "dueDate": "2026-12-07",
+      "daysUntilDue": 18
+    }
+  ],
+  "recentGrants": []
+}
+```
+
+`statusCounts` covers every status, including ones with a count of zero, so the breakdown
+doesn't change shape as data arrives. `upcomingDeadlines` is sorted soonest first and
+`daysUntilDue` goes negative when a date has passed — the UI shows those as overdue.
+`recentGrants` holds the same grant objects as `GET /api/grants`.
 
 ## Deferred, on purpose
 
